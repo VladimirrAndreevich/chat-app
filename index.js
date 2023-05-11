@@ -14,9 +14,10 @@ app.get("/css/style.css", function (req, res) {
   res.sendFile(__dirname + "/css/style.css");
 });
 
-users = {};
-connections = [];
-colors = ["20c73f", "374bc9", "c9a037", "c937b1"];
+var users = {};
+var connections = [];
+var colors = ["20c73f", "374bc9", "c9a037", "c937b1"];
+var chatHistory = []; // Хранение истории сообщений
 
 io.on("connection", function (socket) {
   console.log("Connected");
@@ -34,6 +35,9 @@ io.on("connection", function (socket) {
       }
     }
   });
+
+  // Отправка истории сообщений новому пользователю при подключении
+  socket.emit("chat history", chatHistory);
 
   socket.on("send message", (data) => {
     if (data.name in users) {
@@ -65,9 +69,21 @@ io.on("connection", function (socket) {
 
       io.emit("add message", {
         name: data.name,
-        msg: "Joined the chat",
+        msg: data.msg,
         color: newColor,
       });
+    }
+
+    // Сохранение сообщения в истории
+    chatHistory.push({
+      name: data.name,
+      msg: data.msg,
+      color: users[data.name].color,
+    });
+
+    // Ограничение истории сообщений до 10 последних сообщений
+    if (chatHistory.length > 10) {
+      chatHistory.shift();
     }
   });
 });

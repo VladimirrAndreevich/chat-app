@@ -86,6 +86,23 @@
             `<li class="messages__item"><span class="messages__username" ${usernameStyle}>${data.name}:</span> ${data.msg}</li>`
           );
         });
+
+        socket.on("chat history", (history) => {
+          // Очищаем список сообщений перед отображением истории
+          $allMessages.empty();
+
+          // Отображаем каждое сообщение из истории
+          history.forEach((message) => {
+            var messageColor = message.color ? "#" + message.color : "";
+            var usernameStyle = messageColor
+              ? `style="color: ${messageColor};"`
+              : "";
+
+            $allMessages.append(
+              `<li class="messages__item"><span class="messages__username" ${usernameStyle}>${message.name}:</span> ${message.msg}</li>`
+            );
+          });
+        });
       });
     </script>
   </body>

@@ -51,6 +51,7 @@ body {
   padding: 20px;
 
   list-style: none;
+  overflow-y: auto;
 }
 
 .messages__item {
