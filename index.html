@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat app</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="modal">
+      <p>Enter your username:</p>
+      <input
+        type="text"
+        placeholder="Username"
+        class="modal__input"
+        id="username"
+      />
+      <button class="modal__btn" id="enter">Enter</button>
+    </div>
+
+    <section class="chat hidden" id="chat">
+      <ul id="all-messages" class="messages"></ul>
+
+      <form id="form-message" class="form">
+        <!-- <label for="username" placeholder="Username">Write you username:</label> -->
+        <!-- <input type="text" id="username" placeholder="Username" /> -->
+        <!-- <label for="message">Write you message:</label> -->
+        <div class="form__message">
+          <textarea
+            name="message"
+            id="message"
+            cols="30"
+            rows="10"
+            placeholder="Your text"
+            class="form__textarea"
+          ></textarea>
+          <input type="submit" value="Send" class="form__btn_submit" />
+        </div>
+      </form>
+    </section>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      $(function () {
+        var socket = io.connect();
+        var $form = $("#form-message");
+        var $textarea = $("#message");
+        var $username = $("#username");
+        var $allMessages = $("#all-messages");
+
+        $("#enter").on("click", () => {
+          if ($("#username").val() === "") {
+            console.log("error");
+            $(".modal__input").addClass("modal__input_invalid");
+          } else {
+            $username = $("#username");
+            $(".modal").addClass("modal_disappear");
+            setTimeout(() => {
+              $(".modal").css("display", "none");
+              $("#chat").removeClass("hidden");
+            }, 500);
+          }
+        });
+
+        $form.submit((event) => {
+          event.preventDefault();
+
+          if ($textarea.val() !== "") {
+            socket.emit("send message", {
+              name: $username.val(),
+              msg: $textarea.val(),
+            });
+            $textarea.val("");
+          }
+        });
+
+        socket.on("add message", (data) => {
+          var messageColor = data.color ? "#" + data.color : ""; // Цвет сообщения (если есть)
+          var usernameStyle = messageColor
+            ? `style="color: ${messageColor};"`
+            : ""; // Стиль имени пользователя
+
+          $allMessages.append(
+            `<li class="messages__item"><span class="messages__username" ${usernameStyle}>${data.name}:</span> ${data.msg}</li>`
+          );
+        });
+      });
+    </script>
+  </body>
+</html>
